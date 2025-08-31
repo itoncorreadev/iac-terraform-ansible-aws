@@ -133,7 +133,7 @@ chmod 400 IaC-DEV
 - Para destruir a infraestrutura criada:
 
 ```bash
-terraform destroy
+terraform -chdir=env/dev destroy
 ```
 - Mantenha o inventário Ansible atualizado com os IPs das instâncias.
 

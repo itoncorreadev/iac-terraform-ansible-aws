@@ -21,6 +21,9 @@ resource "aws_instance" "app_server" {
   tags = {
     Name = "Terraform Ansible Ruby on Rails"
   }
+  depends_on = [
+    aws_key_pair.key_pair
+  ]
 }
 
 resource "aws_key_pair" "key_pair" {
