@@ -11,19 +11,23 @@ terraform {
 
 provider "aws" {
   profile = "default"
-  region  = var.regiao_aws
+  region  = var.region_aws
 }
 
 resource "aws_instance" "app_server" {
   ami           = var.ami_id
-  instance_type = var.tipo_instancia
-  key_name = var.chave_ssh
+  instance_type = var.instance_type
+  key_name = var.key_ssh
   tags = {
     Name = "Terraform Ansible Ruby on Rails"
   }
 }
 
-resource "aws_key_pair" "keySSH" {
-	key_name   = var.chave_ssh
-	public_key = file("${var.chave_ssh}.pub")
+resource "aws_key_pair" "key_pair" {
+	key_name   = var.key_ssh
+	public_key = file("${var.key_ssh}.pub")
+}
+
+output "public_ip" {
+  value = aws_instance.app_server.public_ip
 }
