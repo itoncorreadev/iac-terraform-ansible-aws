@@ -4,7 +4,7 @@ Este repositório contém a configuração de infraestrutura como código (IaC) 
 
 ## 🛠 Tecnologias Utilizadas
 
-- 🌐 **Terraform**: Criação de recursos AWS (EC2, Key Pairs, Security Groups, etc.)  
+- 🌀 **Terraform**: Criação de recursos AWS (EC2, Key Pairs, Security Groups, etc.)  
 - ⚡ **Ansible**: Provisionamento e configuração de aplicações nas instâncias EC2  
 - ☁️ **AWS**: Serviços utilizados: EC2, Key Pair, Security Groups, VPC padrão  
 - 🔐 **SSH**: Para acessar as instâncias e aplicar o Ansible  
@@ -12,16 +12,21 @@ Este repositório contém a configuração de infraestrutura como código (IaC) 
 ## 📂 Estrutura do Repositório
 
 ```bash
-├── env/ # Configurações do Terraform
-│   ├── dev/
-│   |   ├── main.tf
-│   |   └── playbook.tf
-|   └── prd/
-├── infra/ # Configurações do Terraform
-│ ├── main.tf # Provider AWS e recursos (EC2, Key Pair)
-│ ├── variables.tf # Variáveis utilizadas
-│ └── outputs.tf # Outputs da infraestrutura (IP público, etc.)
-└── README.md
+├── 📂 env/
+│   ├── 📂 dev/
+│   │   ├── 🌀 main.tf
+│   │   └── ⚡ playbook.yml
+│   └── 📂 prd/
+│   │   ├── 🌀 main.tf
+│   │   └── ⚡ playbook.yml
+│   └── 📂 group_vars/
+│       └── ⚡ all.yml
+├── 📂 infra/
+│   ├── ⚡ hosts.yml
+│   ├── 🌀 main.tf
+│   ├── 🌀 variables.tf
+│   └── 🌀 security_group.tf
+└── 📄 README.md
 ```
 
 ## ⚙️ Pré-requisitos
