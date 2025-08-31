@@ -1,49 +1,117 @@
-- hosts: terraform-ansible
+---
+- hosts: terraform_ansible
   become: yes
+  vars:
+    ruby_version: "3.2.2"
+    rails_version: "7.1.3"
+    project_path: "/home/ubuntu/tcc"
+    rvm_path: "/usr/local/rvm"
+
   tasks:
+    - name: Atualizando cache e instalando dependências do sistema
+      apt:
+        pkg:
+          - curl
+          - gnupg2
+          - build-essential
+          - libssl-dev
+          - libreadline-dev
+          - zlib1g-dev
+          - libsqlite3-dev
+          - git
+          - nodejs
+          - yarn
+        update_cache: yes
 
-  - name: Atualizando cache e instalando dependências do sistema
-    apt:
-      name:
-        - curl
-        - gnupg2
-        - build-essential
-        - libssl-dev
-        - libreadline-dev
-        - zlib1g-dev
-      update_cache: yes
+    - name: Instalando dependências para RVM
+      apt:
+        pkg:
+          - gnupg2
+          - dirmngr
+        state: present
 
-  - name: Instalando RVM (Ruby Version Manager) e Ruby
-    shell: |
-      gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-      curl -sSL https://get.rvm.io | bash -s stable
-      source /etc/profile.d/rvm.sh
-      rvm install 3.2.2
-      rvm use 3.2.2 --default
-    args:
-      executable: /bin/bash
+    - name: Importando chave pública do RVM (mpapis)
+      shell: gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+      ignore_errors: yes
 
-  - name: Instalando Bundler
-    gem:
-      name: bundler
-      state: present
+    - name: Importando chave pública do RVM (pkuczynski)
+      shell: gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+      ignore_errors: yes
 
-  - name: Criando projeto Rails
-    shell: |
-      source /etc/profile.d/rvm.sh
-      rails new /home/ubuntu/tcc --skip-bundle
-    args:
-      creates: /home/ubuntu/tcc/Gemfile
+    - name: Instalando RVM (Ruby Version Manager)
+      shell: curl -sSL https://get.rvm.io | bash -s stable
+      args:
+        creates: "{{ rvm_path }}/bin/rvm"
 
-  - name: Instalando gems do projeto Rails
-    shell: |
-      source /etc/profile.d/rvm.sh
-      cd /home/ubuntu/tcc
-      bundle install
+    - name: Carregando RVM no shell
+      shell: source /etc/profile.d/rvm.sh
+      args:
+        executable: /bin/bash
 
-  - name: Configurando hosts para Rails (permitindo conexões externas)
-    lineinfile:
-      path: /home/ubuntu/tcc/config/environments/development.rb
-      regexp: 'config.hosts'
-      line: 'config.hosts << "*"'
-      backrefs: yes
+    - name: Instalando Ruby via RVM
+      shell: |
+        source /etc/profile.d/rvm.sh
+        rvm install {{ ruby_version }}
+        rvm use {{ ruby_version }} --default
+      args:
+        executable: /bin/bash
+        creates: "{{ rvm_path }}/rubies/ruby-{{ ruby_version }}"
+
+    - name: Instalando Bundler
+      shell: |
+        source /etc/profile.d/rvm.sh
+        gem install bundler
+      args:
+        executable: /bin/bash
+
+    - name: Instalando Rails
+      shell: |
+        source /etc/profile.d/rvm.sh
+        gem install rails -v {{ rails_version }}
+      args:
+        executable: /bin/bash
+
+    - name: Criando projeto Rails
+      shell: |
+        source /etc/profile.d/rvm.sh
+        rails new {{ project_path }} --skip-bundle
+      args:
+        executable: /bin/bash
+        creates: "{{ project_path }}/Gemfile"
+      become: yes
+      become_user: ubuntu
+
+    - name: Instalando gems do projeto Rails
+      shell: |
+        source /etc/profile.d/rvm.sh
+        cd {{ project_path }}
+        bundle install
+      args:
+        executable: /bin/bash
+
+    - name: Criar service do Rails
+      copy:
+        dest: /etc/systemd/system/rails_app.service
+        content: |
+          [Unit]
+          Description=Rails App
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=ubuntu
+          WorkingDirectory=/home/ubuntu/tcc
+          ExecStart=/usr/local/rvm/gems/ruby-3.2.2/wrappers/rails server -b 0.0.0.0 -p 3000
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+      become: yes
+
+    - name: Ativar e iniciar service do Rails
+      systemd:
+        name: rails_app
+        enabled: yes
+        state: started
+      become: yes
+
