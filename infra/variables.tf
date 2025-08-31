@@ -1,12 +1,12 @@
-variable "regiao_aws" {
+variable "region_aws" {
   type = string
 }
 
-variable "chave_ssh" {
+variable "key_ssh" {
   type = string
 }
 
-variable "tipo_instancia" {
+variable "instance_type" {
   type = string
 }
 
