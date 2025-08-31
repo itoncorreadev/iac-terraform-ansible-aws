@@ -1,1 +1,144 @@
-# iac-terraform-ansible-aws
+# ☁️ Infraestrutura AWS com Terraform e Ansible
+
+Este repositório contém a configuração de infraestrutura como código (IaC) utilizando **Terraform** para provisionar recursos na AWS e **Ansible** para automatizar a configuração das instâncias.
+
+## 🛠 Tecnologias Utilizadas
+
+- 🌐 **Terraform**: Criação de recursos AWS (EC2, Key Pairs, Security Groups, etc.)  
+- ⚡ **Ansible**: Provisionamento e configuração de aplicações nas instâncias EC2  
+- ☁️ **AWS**: Serviços utilizados: EC2, Key Pair, Security Groups, VPC padrão  
+- 🔐 **SSH**: Para acessar as instâncias e aplicar o Ansible  
+
+## 📂 Estrutura do Repositório
+
+```bash
+├── env/ # Configurações do Terraform
+│   ├── dev/
+│   |   ├── main.tf
+│   |   └── playbook.tf
+|   └── prd/
+├── infra/ # Configurações do Terraform
+│ ├── main.tf # Provider AWS e recursos (EC2, Key Pair)
+│ ├── variables.tf # Variáveis utilizadas
+│ └── outputs.tf # Outputs da infraestrutura (IP público, etc.)
+└── README.md
+```
+
+## ⚙️ Pré-requisitos
+
+- ✅ **Terraform** >= 1.0  
+- ✅ **AWS CLI** configurada com credenciais válidas  
+- ✅ **Ansible** >= 2.9  
+- ✅ **Chave SSH privada** correspondente à key pair utilizada no Terraform  
+
+## 🚀 Como Provisionar a Infraestrutura
+
+### 1️⃣ Configurar AWS CLI
+```bash
+aws configure
+```
+
+Forneça:
+
+- AWS Access Key ID
+- AWS Secret Access Key
+- Default region (ex: us-east-1)
+- Default output format (json)
+
+### 2️⃣ Inicializar Terraform
+
+```bash
+cd infra
+terraform init
+
+cd env/dev
+terraform init
+```
+
+### 3️⃣ Planejar a criação dos recursos
+
+```bash
+terraform plan
+```
+
+### 4️⃣ Aplicar a infraestrutura
+
+```bash
+terraform apply
+```
+
+### 5️⃣ Verificar IP das instâncias
+
+```bash
+terraform output app_server_public_ip
+```
+
+## 🔐 Conectar via SSH
+
+```bash
+ssh -i IaC-DEV ubuntu@<IP_PUBLICO_DA_INSTANCIA>
+```
+Substitua <IP_PUBLICO_DA_INSTANCIA> pelo IP retornado pelo Terraform.
+Use o usuário correto conforme a AMI:
+
+- Ubuntu → ubuntu
+
+- Amazon Linux → ec2-user
+
+## 🖥 Provisionamento com Ansible
+
+### 1️⃣ Atualize o inventário (hosts.yml) com o IP público da instância:
+
+### 2️⃣ Execute o playbook:
+
+```bash
+cd ansible
+ansible-playbook -i hosts.ini playbook.yml
+```
+
+## 📊 Arquitetura da Infraestrutura
+
+```bash
+          ┌───────────────┐
+          │ Terraform     │
+          │ Provisiona:   │
+          │ - VPC         │
+          │ - SG          │
+          │ - EC2         │
+          │ - Key Pair    │
+          └───────┬───────┘
+                  │
+                  ▼
+          ┌───────────────┐
+          │ AWS EC2       │
+          │ Instâncias    │
+          │ Ubuntu / AMI  │
+          └───────┬───────┘
+                  │
+                  ▼
+          ┌───────────────┐
+          │ Ansible       │
+          │ Configura:    │
+          │ - Apps        │
+          │ - Pacotes     │
+          │ - Users/SSH   │
+          └───────────────┘
+
+```
+
+## 💡 Dicas e Boas Práticas
+
+- Sempre rode terraform plan antes de terraform apply.
+- Proteja sua chave privada:
+
+```bash
+chmod 400 IaC-DEV
+```
+- Para destruir a infraestrutura criada:
+
+```bash
+terraform destroy
+```
+- Mantenha o inventário Ansible atualizado com os IPs das instâncias.
+
+- Use Security Groups da AWS para permitir acesso à porta 22 (SSH).
