@@ -1,23 +1,49 @@
 - hosts: terraform-ansible
+  become: yes
   tasks:
-  - name: Instalando o python3, virtualenv
+
+  - name: Atualizando cache e instalando dependências do sistema
     apt:
-      pkg:
-      - python3
-      - virtualenv
-      update_cache: yes
-    become: yes
-  - name: Instalando dependencias com pip (Django e Django Rest)
-    pip:
-      virtualenv: /home/ubuntu/tcc/venv
       name:
-        - django
-        - djangorestframework
-  - name: Iniciando o projeto
-    shell: '. /home/ubuntu/tcc/venv/bin/activate; django-admin startproject setup /home/ubuntu/tcc/'
-  - name: Alterando o hosts do settings
+        - curl
+        - gnupg2
+        - build-essential
+        - libssl-dev
+        - libreadline-dev
+        - zlib1g-dev
+      update_cache: yes
+
+  - name: Instalando RVM (Ruby Version Manager) e Ruby
+    shell: |
+      gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+      curl -sSL https://get.rvm.io | bash -s stable
+      source /etc/profile.d/rvm.sh
+      rvm install 3.2.2
+      rvm use 3.2.2 --default
+    args:
+      executable: /bin/bash
+
+  - name: Instalando Bundler
+    gem:
+      name: bundler
+      state: present
+
+  - name: Criando projeto Rails
+    shell: |
+      source /etc/profile.d/rvm.sh
+      rails new /home/ubuntu/tcc --skip-bundle
+    args:
+      creates: /home/ubuntu/tcc/Gemfile
+
+  - name: Instalando gems do projeto Rails
+    shell: |
+      source /etc/profile.d/rvm.sh
+      cd /home/ubuntu/tcc
+      bundle install
+
+  - name: Configurando hosts para Rails (permitindo conexões externas)
     lineinfile:
-      path: /home/ubuntu/tcc/setup/settings.py
-      regexp: 'ALLOWED_HOSTS'
-      line: 'ALLOWED_HOSTS = ["*"]'
+      path: /home/ubuntu/tcc/config/environments/development.rb
+      regexp: 'config.hosts'
+      line: 'config.hosts << "*"'
       backrefs: yes
