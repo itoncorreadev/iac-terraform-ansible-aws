@@ -1,4 +1,4 @@
-# ☁️ Infraestrutura AWS com Terraform e Ansible
+# ☁️ Infraestrutura AWS com Terraform e Ansible (Ruby on Rails)
 
 Este repositório contém a configuração de infraestrutura como código (IaC) utilizando **Terraform** para provisionar recursos na AWS e **Ansible** para automatizar a configuração das instâncias.
 
