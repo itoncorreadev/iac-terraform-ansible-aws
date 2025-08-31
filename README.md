@@ -53,29 +53,21 @@ Forneça:
 ### 2️⃣ Inicializar Terraform
 
 ```bash
-cd infra
-terraform init
-
-cd env/dev
-terraform init
+terraform -chdir=infra init
+terraform -chdir=env/dev init
+terraform -chdir=env/prd init
 ```
 
 ### 3️⃣ Planejar a criação dos recursos
 
 ```bash
-terraform plan
+terraform -chdir=env/dev plan
 ```
 
 ### 4️⃣ Aplicar a infraestrutura
 
 ```bash
-terraform apply
-```
-
-### 5️⃣ Verificar IP das instâncias
-
-```bash
-terraform output app_server_public_ip
+terraform -chdir=env/dev apply
 ```
 
 ## 🔐 Conectar via SSH
