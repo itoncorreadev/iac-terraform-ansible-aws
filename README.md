@@ -76,7 +76,7 @@ terraform output app_server_public_ip
 ## 🔐 Conectar via SSH
 
 ```bash
-ssh -i IaC-DEV ubuntu@<IP_PUBLICO_DA_INSTANCIA>
+ssh -i "env/dev/IaC-DEV.pem" ubuntu@<IP_PUBLICO_DA_INSTANCIA>
 ```
 Substitua <IP_PUBLICO_DA_INSTANCIA> pelo IP retornado pelo Terraform.
 Use o usuário correto conforme a AMI:
@@ -92,8 +92,7 @@ Use o usuário correto conforme a AMI:
 ### 2️⃣ Execute o playbook:
 
 ```bash
-cd ansible
-ansible-playbook -i hosts.ini playbook.yml
+ansible-playbook env/dev/playbook.yml -i infra/hosts.yml -u ubuntu --private-key env/dev/IaC-DEV.pem
 ```
 
 ## 📊 Arquitetura da Infraestrutura
